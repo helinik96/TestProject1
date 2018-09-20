@@ -1,0 +1,488 @@
+using System;
+
+
+using System.Collections.Generic;
+
+
+using System.ComponentModel;
+
+
+using System.Data;
+
+
+using System.Drawing;
+
+
+using System.Linq;
+
+
+using System.Text;
+
+
+using System.Threading.Tasks;
+
+
+using System.Windows.Forms;
+
+
+
+namespace Masaustu_Projem
+
+
+{
+
+
+    public partial class Form1 : Form
+
+
+    {
+
+
+        public Form1()
+
+
+  
+  
+  
+        {
+
+
+            InitializeComponent();
+
+
+        }
+
+
+        ProjemEntities db = new ProjemEntities();
+
+
+      
+
+
+
+        private void Form1_Load(object sender, EventArgs e)
+
+
+        {
+
+
+            KategoriListesi();
+
+
+            
+
+
+           
+
+
+            dataGridView1.DataSource = db.tbl_Urun.ToList();
+
+
+            dataGridView1.Columns[6].Visible = false;
+
+
+
+　
+
+
+        }
+
+
+        public void KategoriListesi()
+
+
+        {
+
+
+            using (ProjemEntities db = new ProjemEntities())
+
+
+            {
+
+
+               
+
+
+                cmbKategori.DataSource = db.tbl_Kategori.ToList();
+
+
+                cmbKategori.DisplayMember = "KategoriAdi";
+
+
+                cmbKategori.ValueMember = "KategoriID";
+
+
+
+            }
+
+
+        }
+
+
+        
+
+
+     
+
+
+        tbl_Urun UrunGetir(int _id)
+
+
+        {
+
+
+            return db.tbl_Urun.Where(x => x.ID == _id).FirstOrDefault();
+
+
+        }
+
+
+       
+
+
+ 
+
+
+
+    private void btnUrunGuncelle_Click(object sender, EventArgs e)
+
+
+        {
+
+
+            tbl_Urun GuncellenecekUrun = db.tbl_Urun.FirstOrDefault();
+
+
+            GuncellenecekUrun.UrunAd = txtUrunAdi.Text;
+
+
+            GuncellenecekUrun.UrunFiyat = txtUrunFiyat.Text;
+
+
+            GuncellenecekUrun.UrunStok = Convert.ToInt32(numUrunStok.Value);
+
+
+            GuncellenecekUrun.UrunBilgi = rtxtUrunBilgi.Text;
+
+
+            GuncellenecekUrun.KategoriID=Convert.ToInt32(cmbKategori.SelectedValue);
+
+
+            int sonuc = db.SaveChanges();
+
+
+            if (sonuc>0)
+
+
+            {
+
+
+                MessageBox.Show("Urun Guncellendi");
+
+
+                dataGridView1.DataSource = db.tbl_Urun.ToList();
+
+
+                
+
+
+                dataGridView1.Columns[6].Visible = false;
+
+
+
+            }
+
+
+            
+
+
+        }
+
+
+
+        private void btnKategoriEkle_Click(object sender, EventArgs e)
+
+
+        {
+
+
+            using (ProjemEntities db = new ProjemEntities())
+
+
+            {
+
+
+
+                if (txtKategoriAdi.Text.Trim() != string.Empty)
+
+
+                {
+
+
+                    tbl_Kategori YeniKategori = new tbl_Kategori();
+
+
+                    YeniKategori.KategoriAdi = txtKategoriAdi.Text;
+
+
+                    db.tbl_Kategori.Add(YeniKategori);
+
+
+                    int sonuc = db.SaveChanges();
+
+
+                    if (sonuc > 0)
+
+
+                    {
+
+
+                        MessageBox.Show("Kategori Eklendi");
+
+
+                        KategoriListesi();
+
+
+                    }
+
+
+                }
+
+
+                else
+
+
+                {
+
+
+                    MessageBox.Show("Kategori Adı Boş Geçilemez");
+
+
+                }
+
+
+            }
+
+
+
+        }
+
+
+
+        private void btnUrunEkle_Click(object sender, EventArgs e)
+
+
+        {
+
+
+            UrunIslemleri YeniUrun = new UrunIslemleri();
+
+
+            if (YeniUrun.UrunEkle(txtUrunAdi.Text,txtUrunFiyat.Text,(int)numUrunStok.Value,rtxtUrunBilgi.Text,(int)cmbKategori.SelectedValue))
+
+
+            {
+
+
+                MessageBox.Show("Urun Eklendi","",MessageBoxButtons.OK);
+
+
+                dataGridView1.DataSource = db.tbl_Urun.ToList();
+
+
+                dataGridView1.Columns[6].Visible = false;
+
+
+
+　
+
+
+　
+
+
+            }
+
+
+            else
+
+
+            {
+
+
+                MessageBox.Show("Hata Oluştu");
+
+
+            }
+
+
+                 
+
+
+        }
+
+
+
+        private void txtArama_TextChanged(object sender, EventArgs e)
+
+
+        {
+
+
+            dataGridView1.DataSource = db.tbl_Urun.Where(x => x.UrunAd.Contains(txtArama.Text)).OrderBy(x=>x.UrunAd).ToList();
+
+
+        }
+
+
+
+     
+
+
+
+      
+
+
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+
+
+        {
+
+
+
+        }
+
+
+
+        private void contextMenuStrip1_Opening_1(object sender, CancelEventArgs e)
+
+
+        {
+
+
+
+        }
+
+
+
+        private void urunGuncelleToolStripMenuItem_Click(object sender, EventArgs e)
+
+
+        {
+
+
+
+            int id = (int)dataGridView1.CurrentRow.Cells["ID"].Value;
+
+
+            tbl_Urun p = UrunGetir(id);
+
+
+            txtUrunAdi.Text = p.UrunAd;
+
+
+            txtUrunFiyat.Text = p.UrunFiyat;
+
+
+            numUrunStok.Text = p.UrunStok.ToString();
+
+
+            rtxtUrunBilgi.Text = p.UrunBilgi;
+
+
+            cmbKategori.SelectedValue = p.KategoriID;
+
+
+        }
+
+
+
+        private void dataGridView1_ContextMenuStripChanged(object sender, EventArgs e)
+
+
+        {
+
+
+
+        }
+
+
+
+        private void dataGridView1_CellContextMenuStripChanged(object sender, DataGridViewCellEventArgs e)
+
+
+        {
+
+
+
+        }
+
+
+
+        private void urunSilToolStripMenuItem_Click(object sender, EventArgs e)
+
+
+        {
+
+
+            using (ProjemEntities db = new ProjemEntities())
+
+
+            {
+
+
+                DialogResult sonuc = MessageBox.Show("Urun Silinsin mi ?", "Urun", MessageBoxButtons.YesNoCancel);
+
+
+                if (sonuc == DialogResult.Yes)
+
+
+                {
+
+
+                    int id = (int)dataGridView1.CurrentRow.Cells["ID"].Value;
+
+
+                    tbl_Urun Silinecek = db.tbl_Urun.FirstOrDefault(x => x.ID == id);
+
+
+                    db.tbl_Urun.Remove(Silinecek);
+
+
+                    db.SaveChanges();
+
+
+                    MessageBox.Show("Urun Silindi!");
+
+
+                    dataGridView1.DataSource = db.tbl_Urun.ToList();
+
+
+                    dataGridView1.Columns[6].Visible = false;
+
+
+
+　
+
+
+　
+
+
+　
+
+
+                }
+
+
+            }
+
+
+        }
+
+
+    }
+
+
+}
+
+
